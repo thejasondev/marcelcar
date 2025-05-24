@@ -1,49 +1,52 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Phone, Mail, ArrowRight } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Phone, Mail, ArrowRight } from "lucide-react";
 
 interface ABTestingCtaProps {
-  variant?: "primary" | "secondary"
-  className?: string
+  variant?: "primary" | "secondary";
+  className?: string;
 }
 
-export default function ABTestingCta({ variant = "primary", className = "" }: ABTestingCtaProps) {
-  const [testVariant, setTestVariant] = useState<"A" | "B" | null>(null)
-  const [hasInteracted, setHasInteracted] = useState(false)
+export default function ABTestingCta({
+  variant = "primary",
+  className = "",
+}: ABTestingCtaProps) {
+  const [testVariant, setTestVariant] = useState<"A" | "B" | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     // Asignar aleatoriamente una variante A/B
-    const variant = Math.random() > 0.5 ? "A" : "B"
-    setTestVariant(variant)
+    const variant = Math.random() > 0.5 ? "A" : "B";
+    setTestVariant(variant);
 
     // Registrar la variante mostrada
     if (typeof window !== "undefined") {
-      console.log(`CTA Test: Showing variant ${variant}`)
+      console.log(`CTA Test: Showing variant ${variant}`);
       // Aquí se podría enviar esta información a un servicio de analytics
     }
-  }, [])
+  }, []);
 
   const trackInteraction = (action: string) => {
     if (!hasInteracted) {
-      setHasInteracted(true)
+      setHasInteracted(true);
       // Registrar la interacción
-      console.log(`CTA Test: User clicked ${action} on variant ${testVariant}`)
+      console.log(`CTA Test: User clicked ${action} on variant ${testVariant}`);
       // Aquí se podría enviar esta información a un servicio de analytics
     }
-  }
+  };
 
-  if (!testVariant) return null
+  if (!testVariant) return null;
 
   if (testVariant === "A") {
     return (
-      <div className={`flex flex-col sm:flex-row gap-4 ${className}`}>
+      <div className={`flex flex-col sm:flex-row gap-3 w-full ${className}`}>
         <Button
           asChild
           size="lg"
-          className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white"
+          className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white py-6 sm:py-4 text-base w-full sm:w-auto"
           onClick={() => trackInteraction("call")}
         >
           <Link href="/contacto">
@@ -54,7 +57,7 @@ export default function ABTestingCta({ variant = "primary", className = "" }: AB
           asChild
           variant="outline"
           size="lg"
-          className="border-marcelcar-highlight text-marcelcar-highlight hover:bg-marcelcar-highlight/10"
+          className="border-marcelcar-highlight text-marcelcar-highlight hover:bg-marcelcar-highlight/10 py-6 sm:py-4 text-base w-full sm:w-auto"
           onClick={() => trackInteraction("email")}
         >
           <Link href="/contacto#form">
@@ -62,15 +65,15 @@ export default function ABTestingCta({ variant = "primary", className = "" }: AB
           </Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row gap-4 ${className}`}>
+    <div className={`flex flex-col sm:flex-row gap-3 w-full ${className}`}>
       <Button
         asChild
         size="lg"
-        className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white"
+        className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white py-6 sm:py-4 text-base w-full sm:w-auto"
         onClick={() => trackInteraction("free_quote")}
       >
         <Link href="/contacto">Presupuesto Gratuito</Link>
@@ -81,8 +84,8 @@ export default function ABTestingCta({ variant = "primary", className = "" }: AB
         size="lg"
         className={
           variant === "primary"
-            ? "border-marcelcar-highlight text-marcelcar-highlight hover:bg-marcelcar-highlight/10"
-            : "bg-marcelcar-accent hover:bg-marcelcar-dark text-white"
+            ? "border-marcelcar-highlight text-marcelcar-highlight hover:bg-marcelcar-highlight/10 py-6 sm:py-4 text-base w-full sm:w-auto"
+            : "bg-marcelcar-accent hover:bg-marcelcar-dark text-white py-6 sm:py-4 text-base w-full sm:w-auto"
         }
         onClick={() => trackInteraction("gallery")}
       >
@@ -91,5 +94,5 @@ export default function ABTestingCta({ variant = "primary", className = "" }: AB
         </Link>
       </Button>
     </div>
-  )
+  );
 }

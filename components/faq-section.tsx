@@ -51,7 +51,7 @@ export default function FaqSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* FAQ Content */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 lg:mt-24">
             <Accordion type="single" collapsible className="w-full space-y-3 lg:space-y-4">
               {faqs.map((faq, index) => (
                 <AccordionItem
@@ -75,7 +75,7 @@ export default function FaqSection() {
             <div className="sticky top-8">
               <div className="relative h-[500px] xl:h-[600px] w-full rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="/placeholder.svg?height=1200&width=800"
+                  src="/capilla.jpg?height=1200&width=800"
                   alt="Técnico trabajando en MarcelCar"
                   fill
                   className="object-cover"
@@ -96,30 +96,6 @@ export default function FaqSection() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact info for mobile/tablet */}
-        <div className="lg:hidden mt-8 text-center">
-          <div className="bg-white dark:bg-marcelcar-dark/30 rounded-lg p-6 shadow-lg">
-            <h3 className="text-lg font-bold mb-3">¿Tienes más preguntas?</h3>
-            <p className="text-muted-foreground mb-4">
-              Nuestro equipo está aquí para ayudarte con cualquier duda sobre nuestros servicios.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a
-                href="tel:+34600123456"
-                className="bg-marcelcar-highlight text-white px-4 py-2 rounded-md hover:bg-marcelcar-accent transition-colors"
-              >
-                📞 +34 600 123 456
-              </a>
-              <a
-                href="mailto:info@marcelcar.es"
-                className="bg-marcelcar-accent text-white px-4 py-2 rounded-md hover:bg-marcelcar-dark transition-colors"
-              >
-                ✉️ info@marcelcar.es
-              </a>
             </div>
           </div>
         </div>

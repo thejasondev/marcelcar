@@ -1,8 +1,25 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Star } from "lucide-react"
-import Image from "next/image"
+"use client";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 
 export default function TestimonialsSection() {
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const testimonials = [
     {
       id: 1,
@@ -31,54 +48,188 @@ export default function TestimonialsSection() {
       rating: 5,
       avatar: "/placeholder.svg?height=100&width=100",
     },
-  ]
+  ];
+
+  const nextSlide = () => {
+    if (!sliderRef.current) return;
+    const maxSlide = testimonials.length - 1;
+    setCurrentSlide((prev) => (prev < maxSlide ? prev + 1 : 0));
+
+    if (sliderRef.current) {
+      const slideWidth = sliderRef.current.scrollWidth / testimonials.length;
+      sliderRef.current.scrollTo({
+        left: ((currentSlide + 1) % (maxSlide + 1)) * slideWidth,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const prevSlide = () => {
+    if (!sliderRef.current) return;
+    const maxSlide = testimonials.length - 1;
+    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : maxSlide));
+
+    if (sliderRef.current) {
+      const slideWidth = sliderRef.current.scrollWidth / testimonials.length;
+      sliderRef.current.scrollTo({
+        left: (currentSlide - 1 < 0 ? maxSlide : currentSlide - 1) * slideWidth,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20">
+    <section className="py-10 sm:py-16 lg:py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Lo Que Dicen Nuestros Clientes</h2>
+        <div className="text-center mb-8 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+            Lo Que Dicen Nuestros Clientes
+          </h2>
           <div className="w-16 lg:w-20 h-1 bg-marcelcar-highlight mx-auto mb-4 lg:mb-6"></div>
           <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            La satisfacción de nuestros clientes es nuestra mejor carta de presentación. Conoce sus experiencias con
-            MarcelCar.
+            La satisfacción de nuestros clientes es nuestra mejor carta de
+            presentación. Conoce sus experiencias con MarcelCar.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {testimonials.map((testimonial) => (
-            <Card
-              key={testimonial.id}
-              className="border-none shadow-lg hover:shadow-xl transition-all duration-300 h-full"
+        {isMobile ? (
+          <div className="relative">
+            <div
+              ref={sliderRef}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6 -mx-4 px-4"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              <CardContent className="p-4 sm:p-6 h-full flex flex-col">
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 lg:h-5 lg:w-5 fill-current text-yellow-500" />
-                  ))}
+              {testimonials.map((testimonial, index) => (
+                <div
+                  key={testimonial.id}
+                  className="min-w-[90%] pr-4 snap-start"
+                >
+                  <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 h-full">
+                    <CardContent className="p-5 h-full flex flex-col">
+                      <div className="absolute top-4 right-4 opacity-10">
+                        <Quote className="h-8 w-8 text-marcelcar-highlight" />
+                      </div>
+                      <div className="flex mb-3">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 fill-current text-yellow-500"
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4 flex-1 leading-relaxed">
+                        "{testimonial.content}"
+                      </p>
+                      <div className="flex items-center mt-auto pt-3 border-t border-gray-100 dark:border-gray-800">
+                        <div className="relative h-10 w-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
+                          <Image
+                            src={testimonial.avatar || "/placeholder.svg"}
+                            alt={testimonial.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-sm truncate">
+                            {testimonial.name}
+                          </h4>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {testimonial.role}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <p className="text-sm lg:text-base text-muted-foreground mb-6 flex-1 leading-relaxed">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center">
-                  <div className="relative h-10 w-10 lg:h-12 lg:w-12 rounded-full overflow-hidden mr-3 lg:mr-4 flex-shrink-0">
-                    <Image
-                      src={testimonial.avatar || "/placeholder.svg"}
-                      alt={testimonial.name}
-                      fill
-                      className="object-cover"
-                    />
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-1 mt-2">
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  className={`w-2 h-2 rounded-full ${
+                    currentSlide === i
+                      ? "bg-marcelcar-highlight"
+                      : "bg-gray-300"
+                  }`}
+                  onClick={() => {
+                    setCurrentSlide(i);
+                    if (sliderRef.current) {
+                      const slideWidth =
+                        sliderRef.current.scrollWidth / testimonials.length;
+                      sliderRef.current.scrollTo({
+                        left: i * slideWidth,
+                        behavior: "smooth",
+                      });
+                    }
+                  }}
+                  aria-label={`Ver testimonio ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={prevSlide}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
+              aria-label="Testimonio anterior"
+            >
+              <ChevronLeft className="h-5 w-5 text-marcelcar-highlight" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
+              aria-label="Testimonio siguiente"
+            >
+              <ChevronRight className="h-5 w-5 text-marcelcar-highlight" />
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {testimonials.map((testimonial) => (
+              <Card
+                key={testimonial.id}
+                className="border-none shadow-lg hover:shadow-xl transition-all duration-300 h-full relative"
+              >
+                <CardContent className="p-4 sm:p-6 h-full flex flex-col">
+                  <div className="absolute top-4 right-4 opacity-10">
+                    <Quote className="h-10 w-10 text-marcelcar-highlight" />
                   </div>
-                  <div className="min-w-0">
-                    <h4 className="font-semibold text-sm lg:text-base truncate">{testimonial.name}</h4>
-                    <p className="text-xs lg:text-sm text-muted-foreground truncate">{testimonial.role}</p>
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4 lg:h-5 lg:w-5 fill-current text-yellow-500"
+                      />
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <p className="text-sm lg:text-base text-muted-foreground mb-6 flex-1 leading-relaxed">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="flex items-center mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="relative h-10 w-10 lg:h-12 lg:w-12 rounded-full overflow-hidden mr-3 lg:mr-4 flex-shrink-0">
+                      <Image
+                        src={testimonial.avatar || "/placeholder.svg"}
+                        alt={testimonial.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm lg:text-base truncate">
+                        {testimonial.name}
+                      </h4>
+                      <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                        {testimonial.role}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </section>
-  )
+  );
 }
