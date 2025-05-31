@@ -3,14 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export default function GalleryPreview() {
   const [isMobile, setIsMobile] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -46,32 +49,116 @@ export default function GalleryPreview() {
     },
   ];
 
-  const nextSlide = () => {
-    if (!sliderRef.current) return;
-    const maxSlide = galleryItems.length - 1;
-    setCurrentSlide((prev) => (prev < maxSlide ? prev + 1 : 0));
+  // Crear un array circular para el efecto infinito
+  const circularItems = [
+    galleryItems[galleryItems.length - 1], // Último elemento al principio
+    ...galleryItems,
+    galleryItems[0], // Primer elemento al final
+  ];
 
-    if (sliderRef.current) {
-      const slideWidth = sliderRef.current.scrollWidth / galleryItems.length;
-      sliderRef.current.scrollTo({
-        left: ((currentSlide + 1) % (maxSlide + 1)) * slideWidth,
-        behavior: "smooth",
-      });
+  // Manejadores de eventos táctiles
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!sliderRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - sliderRef.current.offsetLeft);
+    setScrollLeft(sliderRef.current.scrollLeft);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!sliderRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - sliderRef.current.offsetLeft);
+    setScrollLeft(sliderRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !sliderRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    sliderRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !sliderRef.current) return;
+    const x = e.touches[0].pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    sliderRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Determinar qué imagen está activa basado en la posición de scroll
+  const handleScroll = () => {
+    if (!sliderRef.current) return;
+
+    const scrollPosition = sliderRef.current.scrollLeft;
+    const slideWidth =
+      sliderRef.current.querySelector('div[class*="min-w-"]')?.clientWidth || 0;
+
+    // Ajustamos el índice considerando el elemento extra al principio
+    let index = Math.round(scrollPosition / slideWidth) - 1;
+
+    // Manejo circular para el primer y último elemento
+    if (index < 0) index = galleryItems.length - 1;
+    if (index >= galleryItems.length) index = 0;
+
+    setCurrentImageIndex(index);
+
+    // Manejo de scroll infinito
+    if (scrollPosition === 0) {
+      // Si estamos al principio (viendo el último elemento clonado), saltamos al final real
+      sliderRef.current.scrollLeft = slideWidth * galleryItems.length;
+    } else if (
+      scrollPosition >=
+      slideWidth * (circularItems.length - 2) + slideWidth / 2
+    ) {
+      // Si estamos al final (viendo el primer elemento clonado), saltamos al principio real
+      sliderRef.current.scrollLeft = slideWidth;
     }
   };
 
-  const prevSlide = () => {
-    if (!sliderRef.current) return;
-    const maxSlide = galleryItems.length - 1;
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : maxSlide));
+  // Inicializar el scroll para mostrar el primer elemento real
+  useEffect(() => {
+    if (sliderRef.current && isMobile) {
+      setTimeout(() => {
+        if (sliderRef.current) {
+          const slideWidth =
+            sliderRef.current.querySelector('div[class*="min-w-"]')
+              ?.clientWidth || 0;
+          sliderRef.current.scrollLeft = slideWidth; // Posicionarse en el primer elemento real
 
-    if (sliderRef.current) {
-      const slideWidth = sliderRef.current.scrollWidth / galleryItems.length;
-      sliderRef.current.scrollTo({
-        left: (currentSlide - 1 < 0 ? maxSlide : currentSlide - 1) * slideWidth,
-        behavior: "smooth",
-      });
+          // Añadir listener para actualizar el indicador durante el scroll
+          sliderRef.current.addEventListener("scroll", handleScroll);
+        }
+      }, 100);
+
+      return () => {
+        if (sliderRef.current) {
+          sliderRef.current.removeEventListener("scroll", handleScroll);
+        }
+      };
     }
+  }, [isMobile]);
+
+  // Función para navegar a un slide específico
+  const goToSlide = (index: number) => {
+    if (!sliderRef.current) return;
+
+    const slideWidth =
+      sliderRef.current.querySelector('div[class*="min-w-"]')?.clientWidth || 0;
+    sliderRef.current.scrollTo({
+      left: slideWidth * (index + 1), // +1 porque tenemos un elemento extra al principio
+      behavior: "smooth",
+    });
+
+    setCurrentImageIndex(index);
   };
 
   return (
@@ -89,115 +176,115 @@ export default function GalleryPreview() {
         </div>
 
         {isMobile ? (
-          <div className="relative">
+          <div className="relative -mx-4 px-4">
             <div
               ref={sliderRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6 -mx-4 px-4"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleMouseUp}
+              onScroll={handleScroll}
             >
-              {galleryItems.map((item, index) => (
-                <div key={item.id} className="min-w-[85%] pr-4 snap-start">
-                  <div className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 h-full">
-                    <div className="relative h-52 w-full">
-                      <div
-                        className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                          activeImageIndex === index
-                            ? "opacity-0"
-                            : "opacity-100"
-                        }`}
-                        onClick={() => setActiveImageIndex(index)}
-                      >
-                        <Image
-                          src={item.imageBefore || "/placeholder.svg"}
-                          alt={`Antes - ${item.title}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 85vw, 33vw"
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white text-base font-semibold">
-                            Antes
-                          </span>
+              {circularItems.map((item, index) => {
+                // Determinar el índice real del elemento (sin contar los duplicados)
+                const realIndex =
+                  index === 0
+                    ? galleryItems.length - 1
+                    : index === circularItems.length - 1
+                    ? 0
+                    : index - 1;
+
+                return (
+                  <div
+                    key={`${item.id}-${index}`}
+                    className="min-w-[85%] pr-4 snap-center shrink-0"
+                  >
+                    <div className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 h-full">
+                      <div className="relative h-60 w-full">
+                        <div
+                          className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+                            activeImageIndex === realIndex
+                              ? "opacity-0"
+                              : "opacity-100"
+                          }`}
+                          onClick={() => setActiveImageIndex(realIndex)}
+                        >
+                          <Image
+                            src={item.imageBefore || "/placeholder.svg"}
+                            alt={`Antes - ${item.title}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 85vw, 33vw"
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="text-white text-base font-semibold">
+                              Antes
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+                            activeImageIndex === realIndex
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                          onClick={() => setActiveImageIndex(null)}
+                        >
+                          <Image
+                            src={item.imageAfter || "/placeholder.svg"}
+                            alt={`Después - ${item.title}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 85vw, 33vw"
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="text-white text-base font-semibold">
+                              Después
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div
-                        className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                          activeImageIndex === index
-                            ? "opacity-100"
-                            : "opacity-0"
-                        }`}
-                        onClick={() => setActiveImageIndex(null)}
-                      >
-                        <Image
-                          src={item.imageAfter || "/placeholder.svg"}
-                          alt={`Después - ${item.title}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 85vw, 33vw"
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white text-base font-semibold">
-                            Después
-                          </span>
+                      <div className="p-4 bg-white dark:bg-marcelcar-dark">
+                        <span className="text-xs text-marcelcar-highlight font-medium">
+                          {item.category}
+                        </span>
+                        <h3 className="text-base font-semibold mt-1">
+                          {item.title}
+                        </h3>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Toca para ver el{" "}
+                          {activeImageIndex === realIndex ? "antes" : "después"}
                         </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white dark:bg-marcelcar-dark">
-                      <span className="text-xs text-marcelcar-highlight font-medium">
-                        {item.category}
-                      </span>
-                      <h3 className="text-base font-semibold mt-1">
-                        {item.title}
-                      </h3>
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        Toca para ver el{" "}
-                        {activeImageIndex === index ? "antes" : "después"}
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="flex justify-center gap-1 mt-2">
+            <div className="flex justify-center gap-2 mt-4">
               {galleryItems.map((_, i) => (
                 <button
                   key={i}
                   className={`w-2 h-2 rounded-full ${
-                    currentSlide === i
+                    currentImageIndex === i
                       ? "bg-marcelcar-highlight"
                       : "bg-gray-300"
-                  }`}
-                  onClick={() => {
-                    setCurrentSlide(i);
-                    if (sliderRef.current) {
-                      const slideWidth =
-                        sliderRef.current.scrollWidth / galleryItems.length;
-                      sliderRef.current.scrollTo({
-                        left: i * slideWidth,
-                        behavior: "smooth",
-                      });
-                    }
-                  }}
+                  } transition-colors duration-300`}
+                  onClick={() => goToSlide(i)}
                   aria-label={`Ver trabajo ${i + 1}`}
                 />
               ))}
             </div>
-
-            <button
-              onClick={prevSlide}
-              className="absolute left-0 top-1/3 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
-              aria-label="Trabajo anterior"
-            >
-              <ChevronLeft className="h-5 w-5 text-marcelcar-highlight" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-0 top-1/3 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
-              aria-label="Trabajo siguiente"
-            >
-              <ChevronRight className="h-5 w-5 text-marcelcar-highlight" />
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

@@ -22,7 +22,9 @@ import { useState, useRef, useEffect } from "react";
 
 export default function ServicesSection() {
   const [isMobile, setIsMobile] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,34 +88,42 @@ export default function ServicesSection() {
     },
   ];
 
-  const nextSlide = () => {
+  // Manejadores de eventos táctiles
+  const handleMouseDown = (e: React.MouseEvent) => {
     if (!sliderRef.current) return;
-    const maxSlide = Math.ceil(services.length / 2) - 1;
-    setCurrentSlide((prev) => (prev < maxSlide ? prev + 1 : 0));
-
-    if (sliderRef.current) {
-      const slideWidth =
-        sliderRef.current.scrollWidth / Math.ceil(services.length / 2);
-      sliderRef.current.scrollTo({
-        left: ((currentSlide + 1) % (maxSlide + 1)) * slideWidth,
-        behavior: "smooth",
-      });
-    }
+    setIsDragging(true);
+    setStartX(e.pageX - sliderRef.current.offsetLeft);
+    setScrollLeft(sliderRef.current.scrollLeft);
   };
 
-  const prevSlide = () => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     if (!sliderRef.current) return;
-    const maxSlide = Math.ceil(services.length / 2) - 1;
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : maxSlide));
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - sliderRef.current.offsetLeft);
+    setScrollLeft(sliderRef.current.scrollLeft);
+  };
 
-    if (sliderRef.current) {
-      const slideWidth =
-        sliderRef.current.scrollWidth / Math.ceil(services.length / 2);
-      sliderRef.current.scrollTo({
-        left: (currentSlide - 1 < 0 ? maxSlide : currentSlide - 1) * slideWidth,
-        behavior: "smooth",
-      });
-    }
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !sliderRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // * 2 para aumentar la velocidad del scroll
+    sliderRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !sliderRef.current) return;
+    const x = e.touches[0].pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    sliderRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -131,87 +141,46 @@ export default function ServicesSection() {
         </div>
 
         {isMobile ? (
-          <div className="relative">
+          <div className="relative -mx-4 px-4">
             <div
               ref={sliderRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6 -mx-4 px-4"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleMouseUp}
             >
-              {Array(Math.ceil(services.length / 2))
-                .fill(0)
-                .map((_, slideIndex) => (
-                  <div
-                    key={slideIndex}
-                    className="flex flex-col gap-3 min-w-full snap-start"
-                  >
-                    {services
-                      .slice(slideIndex * 2, slideIndex * 2 + 2)
-                      .map((service, index) => (
-                        <Card
-                          key={slideIndex * 2 + index}
-                          className="border-none shadow-md hover:shadow-lg transition-all duration-300 group h-auto"
-                        >
-                          <CardHeader className="py-3 px-4 flex flex-row items-center space-y-0 gap-3">
-                            <div className="group-hover:scale-110 transition-transform duration-300">
-                              {service.icon}
-                            </div>
-                            <div>
-                              <CardTitle className="text-base leading-tight">
-                                {service.title}
-                              </CardTitle>
-                              <CardDescription className="text-xs leading-relaxed mt-1">
-                                {service.description}
-                              </CardDescription>
-                            </div>
-                          </CardHeader>
-                        </Card>
-                      ))}
-                  </div>
-                ))}
+              {services.map((service, index) => (
+                <div
+                  key={index}
+                  className="min-w-[80%] sm:min-w-[60%] pr-4 snap-start"
+                >
+                  <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+                    <CardHeader className="pb-2 pt-5 px-5">
+                      <div className="mb-4 group-hover:scale-110 transition-transform duration-300">
+                        {service.icon}
+                      </div>
+                      <CardTitle className="text-lg leading-tight">
+                        {service.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 px-5 pb-5 flex-grow">
+                      <CardDescription className="text-sm leading-relaxed">
+                        {service.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
             </div>
-
-            <div className="flex justify-center gap-1 mt-2">
-              {Array(Math.ceil(services.length / 2))
-                .fill(0)
-                .map((_, i) => (
-                  <button
-                    key={i}
-                    className={`w-2 h-2 rounded-full ${
-                      currentSlide === i
-                        ? "bg-marcelcar-highlight"
-                        : "bg-gray-300"
-                    }`}
-                    onClick={() => {
-                      setCurrentSlide(i);
-                      if (sliderRef.current) {
-                        const slideWidth =
-                          sliderRef.current.scrollWidth /
-                          Math.ceil(services.length / 2);
-                        sliderRef.current.scrollTo({
-                          left: i * slideWidth,
-                          behavior: "smooth",
-                        });
-                      }
-                    }}
-                    aria-label={`Ver slide ${i + 1} de servicios`}
-                  />
-                ))}
-            </div>
-
-            <button
-              onClick={prevSlide}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
-              aria-label="Servicio anterior"
-            >
-              <ChevronLeft className="h-5 w-5 text-marcelcar-highlight" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
-              aria-label="Servicio siguiente"
-            >
-              <ChevronRight className="h-5 w-5 text-marcelcar-highlight" />
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
