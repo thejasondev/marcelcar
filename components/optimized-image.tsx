@@ -2,77 +2,33 @@
 
 import { useState, useEffect } from "react";
 import Image, { type ImageProps } from "next/image";
+import { cn } from "@/lib/utils";
 
-interface OptimizedImageProps extends Omit<ImageProps, "src"> {
+interface OptimizedImageProps extends Omit<ImageProps, "src" | "blurDataURL"> {
   src: string;
   fallbackSrc?: string;
-  webpSrc?: string;
-  avifSrc?: string;
-  mobileSrc?: string;
-  mobileWebpSrc?: string;
+  alt: string;
+  className?: string;
 }
 
 export default function OptimizedImage({
   src,
   fallbackSrc,
-  webpSrc,
-  avifSrc,
-  mobileSrc,
-  mobileWebpSrc,
   alt,
-  priority,
-  sizes = "100vw",
+  priority = false,
+  className,
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+  quality = 75,
   ...props
 }: OptimizedImageProps) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>(src);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
 
+  // Reset loading state when src changes
   useEffect(() => {
-    // Detectar si es dispositivo móvil
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    // Detectar soporte para formatos modernos
-    const checkImageSupport = async () => {
-      // Verificar si es móvil y hay versión móvil disponible
-      if (isMobile && mobileSrc) {
-        if (mobileWebpSrc && hasWebPSupport()) {
-          setImgSrc(mobileWebpSrc);
-        } else {
-          setImgSrc(mobileSrc);
-        }
-      } else {
-        // Prioridad: AVIF > WebP > Original
-        if (avifSrc && hasAvifSupport()) {
-          setImgSrc(avifSrc);
-        } else if (webpSrc && hasWebPSupport()) {
-          setImgSrc(webpSrc);
-        } else {
-          setImgSrc(src);
-        }
-      }
-      setIsLoading(false);
-    };
-
-    checkMobile();
-    checkImageSupport();
-
-    // Listener para cambios de tamaño de pantalla
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, [src, webpSrc, avifSrc, mobileSrc, mobileWebpSrc, isMobile]);
-
-  const hasWebPSupport = () => {
-    // Simulamos detección de soporte WebP
-    return true;
-  };
-
-  const hasAvifSupport = () => {
-    // Simulamos detección de soporte AVIF
-    return false;
-  };
+    setIsLoading(true);
+    setImgSrc(src);
+  }, [src]);
 
   const handleError = () => {
     if (fallbackSrc && imgSrc !== fallbackSrc) {
@@ -80,34 +36,33 @@ export default function OptimizedImage({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div
-        className={`bg-gray-200 dark:bg-gray-800 animate-pulse ${props.className}`}
-        style={{ height: props.height, width: props.width }}
-      />
-    );
-  }
+  // Generate blur placeholder (very small base64 image)
+  const blurDataURL =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEDQIHq4C7aQAAAABJRU5ErkJggg==";
 
   return (
-    <picture>
-      {avifSrc && !isMobile && <source srcSet={avifSrc} type="image/avif" />}
-      {webpSrc && !isMobile && <source srcSet={webpSrc} type="image/webp" />}
-      {mobileWebpSrc && isMobile && (
-        <source srcSet={mobileWebpSrc} type="image/webp" />
+    <div className={cn("relative overflow-hidden", className)}>
+      {/* Image loading placeholder */}
+      {isLoading && (
+        <div
+          className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse"
+          aria-hidden="true"
+        />
       )}
-      {mobileSrc && isMobile && <source srcSet={mobileSrc} type="image/jpeg" />}
+
       <Image
-        src={imgSrc || src}
+        src={imgSrc}
         alt={alt}
         {...props}
         onError={handleError}
-        loading={priority ? undefined : "lazy"}
+        onLoad={() => setIsLoading(false)}
+        loading={priority ? "eager" : "lazy"}
         placeholder="blur"
-        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEDQIHq4C7aQAAAABJRU5ErkJggg=="
-        priority={priority}
+        blurDataURL={blurDataURL}
+        quality={quality}
         sizes={sizes}
+        className={isLoading ? "opacity-0" : "opacity-100"}
       />
-    </picture>
+    </div>
   );
 }

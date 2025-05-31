@@ -30,22 +30,22 @@ export default function GalleryPreview() {
       id: 1,
       title: "Restauración Completa",
       category: "Pintura",
-      imageBefore: "/placeholder.svg?height=600&width=800",
-      imageAfter: "/placeholder.svg?height=600&width=800",
+      imageBefore: "/placeholder.svg",
+      imageAfter: "/placeholder.svg",
     },
     {
       id: 2,
       title: "Reparación de Golpe",
       category: "Chapa",
-      imageBefore: "/placeholder.svg?height=600&width=800",
-      imageAfter: "/placeholder.svg?height=600&width=800",
+      imageBefore: "/placeholder.svg",
+      imageAfter: "/placeholder.svg",
     },
     {
       id: 3,
       title: "Eliminación de Rayones",
       category: "Detallado",
-      imageBefore: "/placeholder.svg?height=600&width=800",
-      imageAfter: "/placeholder.svg?height=600&width=800",
+      imageBefore: "/placeholder.svg",
+      imageAfter: "/placeholder.svg",
     },
   ];
 
@@ -224,6 +224,10 @@ export default function GalleryPreview() {
                             fill
                             className="object-cover"
                             sizes="(max-width: 768px) 85vw, 33vw"
+                            quality={75}
+                            loading={index <= 2 ? "eager" : "lazy"}
+                            placeholder="blur"
+                            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEDQIHq4C7aQAAAABJRU5ErkJggg=="
                           />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <span className="text-white text-base font-semibold">
@@ -245,6 +249,10 @@ export default function GalleryPreview() {
                             fill
                             className="object-cover"
                             sizes="(max-width: 768px) 85vw, 33vw"
+                            quality={75}
+                            loading={index <= 2 ? "eager" : "lazy"}
+                            placeholder="blur"
+                            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEDQIHq4C7aQAAAABJRU5ErkJggg=="
                           />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <span className="text-white text-base font-semibold">
@@ -288,7 +296,7 @@ export default function GalleryPreview() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {galleryItems.map((item) => (
+            {galleryItems.map((item, index) => (
               <div
                 key={item.id}
                 className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
@@ -301,6 +309,10 @@ export default function GalleryPreview() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 33vw"
+                      quality={75}
+                      loading={index === 0 ? "eager" : "lazy"}
+                      placeholder="blur"
+                      blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEDQIHq4C7aQAAAABJRU5ErkJggg=="
                     />
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <span className="text-white text-base lg:text-lg font-semibold">
@@ -315,6 +327,10 @@ export default function GalleryPreview() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 33vw"
+                      quality={75}
+                      loading="lazy"
+                      placeholder="blur"
+                      blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEDQIHq4C7aQAAAABJRU5ErkJggg=="
                     />
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <span className="text-white text-base lg:text-lg font-semibold">

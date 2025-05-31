@@ -502,17 +502,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {/* Scroll to top button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-marcelcar-highlight hover:bg-marcelcar-accent text-white p-3 rounded-full shadow-lg transition-all duration-300 z-40"
-          aria-label="Volver arriba"
-        >
-          <ChevronUp className="h-5 w-5" />
-        </button>
-      )}
     </div>
   );
 }

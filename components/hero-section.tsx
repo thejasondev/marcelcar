@@ -8,13 +8,13 @@ export default function HeroSection() {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <OptimizedImage
-          src="/hero-section.jpg?height=1080&width=1920"
-          webpSrc="/hero-section.jpg?height=1080&width=1920"
+          src="/hero-section.jpg"
           alt="Coche restaurado por MarcelCar"
           fill
           priority
           className="object-cover"
           sizes="100vw"
+          quality={80}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-marcelcar-dark/95 via-marcelcar-dark/80 to-marcelcar-dark/60" />
       </div>
