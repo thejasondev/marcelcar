@@ -1,10 +1,10 @@
-import HeroSection from "@/components/hero-section"
-import ServicesSection from "@/components/services-section"
-import ProcessSection from "@/components/process-section"
-import TestimonialsSection from "@/components/testimonials-section"
-import GalleryPreview from "@/components/gallery-preview"
-import FaqSection from "@/components/faq-section"
-import CtaSection from "@/components/cta-section"
+import HeroSection from "@/components/hero-section";
+import ServicesSection from "@/components/services-section";
+import ProcessSection from "@/components/process-section";
+import TestimonialsSection from "@/components/testimonials-section";
+import GalleryPreview from "@/components/gallery-preview";
+import FaqSection from "@/components/faq-section";
+import CtaSection from "@/components/cta-section";
 
 export default function Home() {
   return (
@@ -17,5 +17,5 @@ export default function Home() {
       <FaqSection />
       <CtaSection />
     </div>
-  )
+  );
 }

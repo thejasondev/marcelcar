@@ -8,6 +8,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: false,
+    domains: ["localhost"],
     formats: ["image/webp", "image/avif"],
     remotePatterns: [
       {
