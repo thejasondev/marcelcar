@@ -6,7 +6,7 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-[90vh] flex items-center">
       {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 h-full w-full">
         <OptimizedImage
           src="/hero-section.jpg"
           alt="Coche restaurado por MarcelCar"
@@ -15,6 +15,7 @@ export default function HeroSection() {
           className="object-cover"
           sizes="100vw"
           quality={80}
+          fallbackSrc="/placeholder.svg"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-marcelcar-dark/95 via-marcelcar-dark/80 to-marcelcar-dark/60" />
       </div>

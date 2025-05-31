@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
@@ -28,7 +28,7 @@ export default function TestimonialsSection() {
       content:
         "Increíble trabajo con la reparación de mi coche tras un accidente. Quedó como nuevo y en el plazo prometido. Totalmente recomendable.",
       rating: 5,
-      avatar: "/placeholder.svg?height=100&width=100",
+      avatar: "/placeholder.svg",
     },
     {
       id: 2,
@@ -37,7 +37,7 @@ export default function TestimonialsSection() {
       content:
         "Excelente servicio y atención al cliente. Repararon unos rayones profundos en la puerta y ahora no se nota absolutamente nada.",
       rating: 5,
-      avatar: "/placeholder.svg?height=100&width=100",
+      avatar: "/placeholder.svg",
     },
     {
       id: 3,
@@ -46,36 +46,19 @@ export default function TestimonialsSection() {
       content:
         "Profesionales de primera. Restauraron la pintura de mi coche clásico respetando el color original. El resultado es espectacular.",
       rating: 5,
-      avatar: "/placeholder.svg?height=100&width=100",
+      avatar: "/placeholder.svg",
     },
   ];
 
-  const nextSlide = () => {
+  const goToSlide = (index: number) => {
     if (!sliderRef.current) return;
-    const maxSlide = testimonials.length - 1;
-    setCurrentSlide((prev) => (prev < maxSlide ? prev + 1 : 0));
 
-    if (sliderRef.current) {
-      const slideWidth = sliderRef.current.scrollWidth / testimonials.length;
-      sliderRef.current.scrollTo({
-        left: ((currentSlide + 1) % (maxSlide + 1)) * slideWidth,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const prevSlide = () => {
-    if (!sliderRef.current) return;
-    const maxSlide = testimonials.length - 1;
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : maxSlide));
-
-    if (sliderRef.current) {
-      const slideWidth = sliderRef.current.scrollWidth / testimonials.length;
-      sliderRef.current.scrollTo({
-        left: (currentSlide - 1 < 0 ? maxSlide : currentSlide - 1) * slideWidth,
-        behavior: "smooth",
-      });
-    }
+    setCurrentSlide(index);
+    const slideWidth = sliderRef.current.scrollWidth / testimonials.length;
+    sliderRef.current.scrollTo({
+      left: index * slideWidth,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -97,7 +80,11 @@ export default function TestimonialsSection() {
             <div
               ref={sliderRef}
               className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6 -mx-4 px-4"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
             >
               {testimonials.map((testimonial, index) => (
                 <div
@@ -106,9 +93,6 @@ export default function TestimonialsSection() {
                 >
                   <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 h-full">
                     <CardContent className="p-5 h-full flex flex-col">
-                      <div className="absolute top-4 right-4 opacity-10">
-                        <Quote className="h-8 w-8 text-marcelcar-highlight" />
-                      </div>
                       <div className="flex mb-3">
                         {[...Array(testimonial.rating)].map((_, i) => (
                           <Star
@@ -126,6 +110,7 @@ export default function TestimonialsSection() {
                             src={testimonial.avatar || "/placeholder.svg"}
                             alt={testimonial.name}
                             fill
+                            sizes="(max-width: 768px) 80px, 96px"
                             className="object-cover"
                           />
                         </div>
@@ -144,45 +129,20 @@ export default function TestimonialsSection() {
               ))}
             </div>
 
-            <div className="flex justify-center gap-1 mt-2">
+            <div className="flex justify-center gap-2 mt-4">
               {testimonials.map((_, i) => (
                 <button
                   key={i}
-                  className={`w-2 h-2 rounded-full ${
+                  className={`h-2 w-2 rounded-full transition-all duration-300 ${
                     currentSlide === i
-                      ? "bg-marcelcar-highlight"
-                      : "bg-gray-300"
+                      ? "bg-marcelcar-highlight scale-125"
+                      : "bg-marcelcar-highlight/30"
                   }`}
-                  onClick={() => {
-                    setCurrentSlide(i);
-                    if (sliderRef.current) {
-                      const slideWidth =
-                        sliderRef.current.scrollWidth / testimonials.length;
-                      sliderRef.current.scrollTo({
-                        left: i * slideWidth,
-                        behavior: "smooth",
-                      });
-                    }
-                  }}
+                  onClick={() => goToSlide(i)}
                   aria-label={`Ver testimonio ${i + 1}`}
                 />
               ))}
             </div>
-
-            <button
-              onClick={prevSlide}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
-              aria-label="Testimonio anterior"
-            >
-              <ChevronLeft className="h-5 w-5 text-marcelcar-highlight" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-marcelcar-dark/80 rounded-full p-1 shadow-md z-10"
-              aria-label="Testimonio siguiente"
-            >
-              <ChevronRight className="h-5 w-5 text-marcelcar-highlight" />
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -212,6 +172,7 @@ export default function TestimonialsSection() {
                         src={testimonial.avatar || "/placeholder.svg"}
                         alt={testimonial.name}
                         fill
+                        sizes="(max-width: 768px) 80px, 96px"
                         className="object-cover"
                       />
                     </div>

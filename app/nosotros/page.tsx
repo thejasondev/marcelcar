@@ -257,9 +257,10 @@ export default function AboutPage() {
             <div className="hidden sm:block lg:w-1/2">
               <div className="relative h-[400px] sm:h-[500px] w-full rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="/hero-section.jpg?height=1000&width=800"
+                  src="/hero-section.jpg"
                   alt="Equipo de MarcelCar"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover"
                 />
               </div>
@@ -470,9 +471,10 @@ export default function AboutPage() {
             <div className="hidden sm:block lg:order-1 lg:w-1/2">
               <div className="relative h-[400px] sm:h-[500px] w-full rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="/hero-section.jpg?height=1000&width=800"
+                  src="/hero-section.jpg"
                   alt="Historia de MarcelCar"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover"
                 />
               </div>
