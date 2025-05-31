@@ -1,10 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone, ChevronUp } from "lucide-react";
+import {
+  Menu,
+  X,
+  Phone,
+  ChevronUp,
+  Home,
+  Users,
+  Settings,
+  Image,
+  Mail,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
@@ -12,7 +22,35 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const pathname = usePathname();
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    // Prevent body scroll when menu is open
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Handle scroll effects
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -30,6 +68,11 @@ export default function Header() {
     };
   }, []);
 
+  // Close menu when route changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
@@ -39,11 +82,23 @@ export default function Header() {
   };
 
   const navItems = [
-    { href: "/", label: "Inicio" },
-    { href: "/nosotros", label: "Nosotros" },
-    { href: "/servicios", label: "Servicios" },
-    { href: "/galeria", label: "Galería" },
-    { href: "/contacto", label: "Contacto" },
+    { href: "/", label: "Inicio", icon: <Home className="w-4 h-4" /> },
+    {
+      href: "/nosotros",
+      label: "Nosotros",
+      icon: <Users className="w-4 h-4" />,
+    },
+    {
+      href: "/servicios",
+      label: "Servicios",
+      icon: <Settings className="w-4 h-4" />,
+    },
+    { href: "/galeria", label: "Galería", icon: <Image className="w-4 h-4" /> },
+    {
+      href: "/contacto",
+      label: "Contacto",
+      icon: <Mail className="w-4 h-4" />,
+    },
   ];
 
   const isActive = (path: string) => {
@@ -102,54 +157,91 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden text-foreground p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+            className={cn(
+              "lg:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all",
+              isOpen
+                ? "bg-marcelcar-highlight text-white"
+                : "text-foreground hover:bg-gray-100 dark:hover:bg-gray-800"
+            )}
             onClick={toggleMenu}
             aria-label="Toggle menu"
+            aria-controls="mobile-menu"
           >
-            {isOpen ? <X size={20} /> : <Menu size={20} />}
+            {isOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border shadow-lg">
-            <div className="container mx-auto px-4 py-4 space-y-3">
+        <div
+          id="mobile-menu"
+          ref={mobileMenuRef}
+          className={cn(
+            "lg:hidden fixed inset-0 z-40 transition-all duration-300 ease-in-out",
+            isOpen
+              ? "opacity-100 pointer-events-auto top-[56px]"
+              : "opacity-0 pointer-events-none top-[-100%]"
+          )}
+        >
+          <div
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className={cn(
+              "relative h-auto max-h-[80vh] overflow-y-auto bg-white dark:bg-marcelcar-dark border-t border-border shadow-xl",
+              "transition-transform duration-300",
+              isOpen ? "translate-y-0" : "-translate-y-full"
+            )}
+          >
+            <div className="container mx-auto px-4 py-4 space-y-1">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "block transition-colors py-3 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 relative",
+                    "flex items-center gap-3 transition-colors py-4 px-3 rounded-lg",
                     isActive(item.href)
-                      ? "text-marcelcar-highlight font-medium bg-gray-50 dark:bg-gray-800/50 border-l-4 border-marcelcar-highlight pl-3"
-                      : "text-foreground hover:text-marcelcar-highlight"
+                      ? "text-marcelcar-highlight font-medium bg-marcelcar-highlight/10"
+                      : "text-foreground hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-marcelcar-highlight"
                   )}
                   onClick={() => setIsOpen(false)}
                 >
-                  {item.label}
+                  <span
+                    className={cn(
+                      "flex items-center justify-center w-8 h-8 rounded-full",
+                      isActive(item.href)
+                        ? "bg-marcelcar-highlight text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-foreground"
+                    )}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="text-base font-medium">{item.label}</span>
                 </Link>
               ))}
-              <div className="pt-3 border-t border-border">
+              <div className="pt-4 mt-2 border-t border-border">
                 <Button
                   asChild
-                  className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white w-full mb-3"
-                  onClick={() => setIsOpen(false)}
+                  className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white w-full py-6 rounded-lg text-base font-medium"
                 >
-                  <Link href="/contacto">
-                    <Phone className="mr-2 h-4 w-4" /> Sacar Cita
+                  <Link
+                    href="/contacto"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <Phone className="h-5 w-5" /> Sacar Cita
                   </Link>
                 </Button>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </header>
 
       {/* Scroll to top button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-marcelcar-highlight hover:bg-marcelcar-accent text-white p-3 rounded-full shadow-lg transition-all duration-300 z-40"
+          className="fixed bottom-6 right-6 bg-marcelcar-highlight hover:bg-marcelcar-accent text-white p-3 rounded-full shadow-lg transition-all duration-300 z-40 animate-bounce"
           aria-label="Volver arriba"
         >
           <ChevronUp className="h-5 w-5" />
