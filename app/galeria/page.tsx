@@ -332,17 +332,21 @@ export default function GalleryPage() {
         open={!!selectedImage}
         onOpenChange={(open) => !open && setSelectedImage(null)}
       >
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{selectedImage?.title}</DialogTitle>
-            <DialogDescription>{selectedImage?.description}</DialogDescription>
+        <DialogContent className="max-w-4xl w-[95%] p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-2 pb-2">
+            <DialogTitle className="text-lg sm:text-xl">
+              {selectedImage?.title}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              {selectedImage?.description}
+            </DialogDescription>
           </DialogHeader>
 
           {selectedImage && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <div className="space-y-2">
-                <p className="font-semibold text-center">Antes</p>
-                <div className="relative h-[250px] sm:h-[300px] w-full rounded-lg overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div className="space-y-1">
+                <p className="font-semibold text-center text-sm text-marcelcar-highlight">Antes</p>
+                <div className="relative h-[200px] sm:h-[250px] md:h-[300px] w-full rounded-lg overflow-hidden">
                   <Image
                     src={selectedImage.imageBefore || "/placeholder.svg"}
                     alt={`Antes - ${selectedImage.title}`}
@@ -351,9 +355,11 @@ export default function GalleryPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <p className="font-semibold text-center">Después</p>
-                <div className="relative h-[250px] sm:h-[300px] w-full rounded-lg overflow-hidden">
+              <div className="space-y-1">
+                <p className="font-semibold text-center text-sm text-marcelcar-highlight">
+                  Después
+                </p>
+                <div className="relative h-[200px] sm:h-[250px] md:h-[300px] w-full rounded-lg overflow-hidden">
                   <Image
                     src={selectedImage.imageAfter || "/placeholder.svg"}
                     alt={`Después - ${selectedImage.title}`}
@@ -364,15 +370,6 @@ export default function GalleryPage() {
               </div>
             </div>
           )}
-
-          <div className="flex justify-center mt-4">
-            <Button
-              className="bg-marcelcar-highlight hover:bg-marcelcar-accent text-white"
-              onClick={() => setSelectedImage(null)}
-            >
-              Cerrar
-            </Button>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -474,12 +471,13 @@ function MobileGalleryItem({ item, onClick }: GalleryItemProps) {
 
         {/* Toggle button */}
         <button
-          className="absolute bottom-3 right-3 bg-white/80 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium shadow-md z-10"
+          className="absolute bottom-3 right-3 bg-white/80 dark:bg-black/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium shadow-md z-10 flex items-center gap-1.5"
           onClick={(e) => {
             e.stopPropagation();
             setShowAfter(!showAfter);
           }}
         >
+          <span className="w-2 h-2 rounded-full bg-marcelcar-highlight"></span>
           {showAfter ? "Ver antes" : "Ver después"}
         </button>
       </div>
